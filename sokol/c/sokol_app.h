@@ -2236,6 +2236,7 @@ inline void sapp_run(const sapp_desc& desc) { return sapp_run(&desc); }
     #include <X11/Xresource.h>
     #include <X11/Xatom.h>
     #include <X11/extensions/XInput2.h>
+    #include <X11/extensions/Xrandr.h>
     #include <X11/Xcursor/Xcursor.h>
     #include <X11/cursorfont.h> /* XC_* font cursors */
     #include <X11/Xmd.h> /* CARD32 */
@@ -10692,6 +10693,20 @@ _SOKOL_PRIVATE void _sapp_x11_create_window(Visual* visual, int depth) {
 
     int display_width = DisplayWidth(_sapp.x11.display, _sapp.x11.screen);
     int display_height = DisplayHeight(_sapp.x11.display, _sapp.x11.screen);
+
+    int num_monitors = 0;
+    XRRMonitorInfo* monitors = XRRGetMonitors(_sapp.x11.display, _sapp.x11.root, 1, &num_monitors);
+
+    for (int i = 0; i < num_monitors; i++) {
+        if (monitors[i].primary) {
+            display_width = monitors[i].width;
+            display_height = monitors[i].height;
+            break;
+        }
+    }
+
+    XRRFreeMonitors(monitors);
+
     int window_width = _sapp.window_width;
     int window_height = _sapp.window_height;
     if (0 == window_width) {
